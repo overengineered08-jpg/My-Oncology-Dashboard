@@ -101,7 +101,7 @@ main{padding:14px 14px 100px}.split{grid-template-columns:1fr}.plist{flex-direct
 <script>
 /* 1. Paste your Supabase project URL and publishable key here */
 const SUPA_URL="https://mnoqiryhqklyouofelbm.supabase.co",SUPA_KEY="sb_publishable_-U0FsGKysaDiPC7uGBMviA_nW-xyWq5";
-const SUPA_OK=!SUPA_URL.includes("PASTE"),sb=SUPA_OK?supabase.createClient(SUPA_URL,SUPA_KEY):null;
+const SUPA_OK=!SUPA_URL.includes("PASTE"),sb=SUPA_OK?supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:false}}):null;try{Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}
 let U=100;const id=()=>++U,$=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const ST={"Stable":"gr","Infusing":"bl","Pre-meds due":"bl","Neutropenic precautions":"ye","Fever watch":"pk","Discharge planning":"pu"};
 const SH={"Day (07:00–19:30)":["07:00","19:30"],"Night (19:00–07:30)":["19:00","07:30"],"Early (06:00–14:30)":["06:00","14:30"],"Mid (11:00–23:30)":["11:00","23:30"],"Evening (14:00–22:30)":["14:00","22:30"],"Weekend day (08:00–20:30)":["08:00","20:30"],"Custom":null};
