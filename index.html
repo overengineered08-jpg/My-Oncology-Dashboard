@@ -93,7 +93,7 @@ main{padding:14px 14px 100px}.split{grid-template-columns:1fr}.plist{flex-direct
 <div class="row"><button class="btn" style="width:100%" data-act="login">Sign in</button></div>
 <div class="row" style="margin-top:10px"><button class="lnk" data-act="signup">Create account</button><button class="lnk" data-act="reset">Forgot password</button></div>
 <p class="hint">Only emails your administrator has approved can open the dashboard.</p>
-<p class="hint" style="margin-top:6px">Version 4</p>
+<p class="hint" style="margin-top:6px">Version 5</p>
 </div></section>
 <div id="app" class="hide">
 <aside><div class="brand">Oncology Dashboard</div>
@@ -177,8 +177,8 @@ function incoming(){const o=[["Rapid response","Bed 5B","Tomás R. has a falling
 S.al.unshift({id:id(),ty:o[0],loc:o[1],msg:o[2],by:o[3],t:tm(),st:"active",u:"sim",aud:"My unit"});beep();ban();if(S.v=="alerts")draw()}
 /* views */
 const chip=p=>`<i class="chip ${ST[p.st]||"pu"}">${esc(p.st)}</i>`;
-const pcard=(p,act,on)=>`<button class="pc ${on?"on":""}" data-act="${act}" data-id="${p.id}"><b>${esc(p.name)}</b><span>${esc(p.bed)}</span><span>${esc(p.dx)}</span>${chip(p)}</button>`;
-const head=(t,s)=>`${viewBan()}<div class="top"><div><h1>${t}</h1><p>${s}</p></div><div class="row" style="margin:0">${locSw()}<button class="btn em" data-act="announce">Announce emergency</button><button class="btn ghost" data-act="theme">Light or dark</button></div></div>`;
+const pcard=(p,act,on)=>`<button class="pc ${on?"on":""}" data-act="${act}" data-id="${p.id}"><b>${esc(p.name)}</b><span>${esc(p.bed)}</span><span>${esc(p.dx)}</span><span>Care team: ${esc((p.team||[]).map(e=>dn(e).split(/[ @]/)[0]).join(", ")||"none yet")}</span>${chip(p)}</button>`;
+const head=(t,s)=>`${viewBan()}<div class="top"><div><h1>${t}</h1><p>${s}</p></div><div class="row" style="margin:0"><button class="lnk" id="sync" data-act="syncnow">Sync</button>${locSw()}<button class="btn em" data-act="announce">Announce emergency</button><button class="btn ghost" data-act="theme">Light or dark</button></div></div>`;
 const note=(k,e)=>`<div class="entry"><div class="meta"><b>${esc(nm(e.p))}</b>${k=="emo"?`<i class="chip pk">${esc(e.m)}</i>`:""}${esc(e.t)} · ${esc(e.a)}${e.ed?" · edited":""}<button class="lnk" data-act="e${k}" data-id="${e.id}">Edit</button></div>${esc(e.x)}</div>`;
 function ban(){$("#ban").innerHTML=S.al.filter(a=>a.st=="active").map(a=>`<div class="alert" role="alert"><div><b>${esc(a.ty)}${a.loc?" · "+esc(a.loc):""}</b><div>${esc(a.msg)}</div><small>${(a.u!=S.uid)?"Incoming from "+esc(a.by):"You announced this to "+esc(a.aud)} at ${a.t}${a.ack?" · Acknowledged "+a.ack:""}</small></div><div class="row">${(a.u!=S.uid)&&!a.ack?`<button data-act="ack" data-id="${a.id}">Acknowledge</button>`:""}<button data-act="res" data-id="${a.id}">Resolve</button></div></div>`).join("")}
 function home(){const f=x=>!S.sel||x.p==S.sel||x.p==0,cl=S.clin.filter(f),em=S.emo.filter(f),ts=S.tasks.filter(f),g=new Date().getHours();
@@ -213,22 +213,22 @@ function alerts(){const A=S.al.filter(a=>a.st=="active"),R=S.al.filter(a=>a.st!=
 return head("Emergency alerts","Announce an emergency or respond to one sent to you.")+`<div class="row" style="margin:0 0 16px"><button class="btn em" data-act="announce">Announce emergency</button></div><div class="grid">
 <section class="panel pk"><header><h3>Active</h3><span>${A.length}</span></header>${A.map(a=>`<div class="entry"><b>${esc(a.ty)}${a.loc?" · "+esc(a.loc):""}</b><div>${esc(a.msg)}</div><div class="meta">${(a.u!=S.uid)?"From "+esc(a.by):"Sent by you to "+esc(a.aud)} · ${a.t}<button class="lnk" data-act="ea" data-id="${a.id}">Update</button></div></div>`).join("")||'<div class="empty">No active emergencies.</div>'}</section>
 <section class="panel"><header><h3>History</h3><span>${R.length}</span></header>${R.map(a=>`<div class="entry"><b>${esc(a.ty)}${a.loc?" · "+esc(a.loc):""}</b><div>${esc(a.msg)}</div><div class="meta">${(a.u!=S.uid)?"From "+esc(a.by):"Sent by you"} · ${a.t} · resolved ${a.rt}<button class="lnk" data-act="da" data-id="${a.id}">Delete</button></div></div>`).join("")||'<div class="empty">Resolved alerts appear here.</div>'}</section></div>`}
-function draw(){$("#view").innerHTML=({home,patients,profile,alerts,admin,messages})[S.v]();document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("on",b.dataset.v==S.v));ban();badge();tick();tourHL();save()}
+function draw(){$("#view").innerHTML=({home,patients,profile,alerts,admin,messages})[S.v]();document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("on",b.dataset.v==S.v));ban();badge();upd();tick();tourHL();save()}
 /* auth, admin, sync */
 /* messages, presence, location switch */
 const locN=i=>((S.locs||[]).find(l=>l.id==i)||{}).name||"this location";
 const viewBan=()=>S.home&&S.loc!=S.home?`<div class="view"><span>Viewing <b>${esc(locN(S.loc))}</b> as admin. Changes you make here affect that location.</span><button class="btn sm" data-act="gohome">Back to my location</button></div>`:"";
-const locSw=()=>S.role=="admin"&&(S.locs||[]).length>1?`<select id="locsw" data-chg="loc" aria-label="Location" style="width:auto">${S.locs.map(l=>`<option value="${l.id}"${l.id==S.loc?" selected":""}>${esc(l.name)}</option>`).join("")}</select>`:"";
-async function switchLoc(l){await flush();S.ready=0;const r=await sb.from("location_data").select("data").eq("location_id",l).maybeSingle();S.loc=l;S.sel=null;adopt(r.data&&r.data.data||{});S.ready=1;sub();if(S.v=="admin")await loadAdm();else draw()}
+const locSw=()=>S.role=="admin"?`<select id="locsw" data-chg="loc" aria-label="Location" style="width:auto">${(S.locs||[]).map(l=>`<option value="${l.id}"${l.id==S.loc?" selected":""}>${esc(l.name)}</option>`).join("")}</select>`:`<span class="chip pu" style="margin:0">${esc(S.me.unit)}</span>`;
+async function switchLoc(l){await flush();S.ready=0;const r=await sb.from("location_data").select("data,updated_at").eq("location_id",l).maybeSingle();LU=r.data?new Date(r.data.updated_at).getTime():0;S.loc=l;S.sel=null;adopt(r.data&&r.data.data||{});S.ready=1;sub();if(S.v=="admin")await loadAdm();else draw()}
 const dn=e=>((S.dir||[]).find(d=>d.email==e)||{}).name||e;
 async function loadDir(){const r=await sb.rpc("directory");S.dir=r.data||[]}
 async function loadMsgs(){const r=await sb.from("messages").select("*").order("created_at",{ascending:false}).limit(500);S.msgs=(r.data||[]).reverse()}
-const peers=()=>[...new Map(S.dir.filter(d=>d.email!=S.email).map(d=>[d.email,d])).values()].sort((a,b)=>a.location_name.localeCompare(b.location_name)||a.name.localeCompare(b.name));
+const peers=()=>{const m=new Map();S.dir.filter(d=>d.email!=S.email).forEach(d=>{const o=m.get(d.email);if(!o||(d.role=="admin"&&o.role!="admin"))m.set(d.email,d)});const A="Administrators",g=d=>d.role=="admin"?A:d.location_name;return[...m.values()].map(d=>({...d,g:g(d)})).sort((a,b)=>(a.g==A?-1:b.g==A?1:0)||a.g.localeCompare(b.g)||a.name.localeCompare(b.name))};
 const newer=m=>new Date(m.created_at)>new Date((S.me.mr||{})[m.sender_email]||0);
 const unread=e=>S.msgs.filter(m=>m.sender_email==e&&m.recipient_email==S.email&&newer(m)).length;
 function badge(){const n=S.msgs.filter(m=>m.recipient_email==S.email&&newer(m)).length,b=$("#msgBadge");if(b){b.textContent=n;b.classList.toggle("hide",!n)}}
 function readP(e){S.me.mr=S.me.mr||{};S.me.mr[e]=new Date().toISOString()}
-function peersHTML(){let L="";return peers().map(d=>{const hd=d.location_name!=L?(L=d.location_name,`<div class="log"><b>${esc(L)}</b></div>`):"",u=unread(d.email);return hd+`<button class="pc ${S.peer==d.email?"on":""}" style="flex:none;width:100%;margin-bottom:6px;flex-direction:row;align-items:center" data-act="peer" data-e="${esc(d.email)}"><span class="dot ${S.on.has(d.email)?"on":""}"></span><b>${esc(d.name)}</b>${u?`<span class="badge">${u}</span>`:""}</button>`}).join("")||'<div class="empty">No colleagues found yet.</div>'}
+function peersHTML(){let L="";return peers().map(d=>{const hd=d.g!=L?(L=d.g,`<div class="log"><b>${esc(L)}</b></div>`):"",u=unread(d.email);return hd+`<button class="pc ${S.peer==d.email?"on":""}" style="flex:none;width:100%;margin-bottom:6px;flex-direction:row;align-items:center" data-act="peer" data-e="${esc(d.email)}"><span class="dot ${S.on.has(d.email)?"on":""}"></span><b>${esc(d.name)}</b>${u?`<span class="badge">${u}</span>`:""}</button>`}).join("")||'<div class="empty">No colleagues found yet.</div>'}
 function threadHTML(){const p=S.peer;return S.msgs.filter(m=>(m.sender_email==p&&m.recipient_email==S.email)||(m.sender_email==S.email&&m.recipient_email==p)).map(m=>`<div class="bub ${m.sender_email==S.email?"me":""}">${esc(m.body)}<small>${new Date(m.created_at).toLocaleString([],{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</small></div>`).join("")||'<div class="empty">No messages yet. Say hello.</div>'}
 function drawThread(){const t=$("#thread");if(t){t.innerHTML=threadHTML();t.scrollTop=t.scrollHeight}}
 function drawPeers(){const p=$("#peers");if(p)p.innerHTML=peersHTML()}
@@ -237,6 +237,13 @@ function ping(){try{const c=new(window.AudioContext||webkitAudioContext)(),o=c.c
 let MC=null,PC=null;
 function subMsg(){if(MC)sb.removeChannel(MC);MC=sb.channel("msg-"+S.email).on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:"recipient_email=eq."+S.email},p=>{const m=p.new;if(S.msgs.some(x=>x.id==m.id))return;S.msgs.push(m);if(S.v=="messages"&&S.peer==m.sender_email){readP(S.peer);drawThread()}else ping();drawPeers();badge()}).subscribe()}
 function pres(){if(PC)sb.removeChannel(PC);PC=sb.channel("online",{config:{presence:{key:S.email}}});PC.on("presence",{event:"sync"},()=>{S.on=new Set(Object.keys(PC.presenceState()));if(S.v=="messages")drawPeers();else if(S.v=="admin")draw()}).subscribe(st=>{if(st=="SUBSCRIBED")PC.track({at:Date.now()})})}
+let LU=0,LT="";
+function upd(m){if(m)LT=m;const b=$("#sync");if(b)b.textContent=LT||"Sync"}
+function remote(d){const had=S.al.filter(a=>a.st=="active").map(a=>a.id);adopt(d);if(S.al.some(a=>a.st=="active"&&!had.includes(a.id)))beep();if(M)ban();else draw()}
+async function poll(force){if(!S.ready||!sb)return;const q=await sb.from("location_data").select("updated_at").eq("location_id",S.loc).maybeSingle();
+if(q.error){upd("Sync problem");return}
+if(q.data){const t=new Date(q.data.updated_at).getTime();if(t>LU||force===true){const r=await sb.from("location_data").select("data").eq("location_id",S.loc).maybeSingle(),d=r.data&&r.data.data;if(d&&d.by!=CID&&!PEND){LU=t;remote(d)}else if(!PEND)LU=t}}
+upd("Synced "+tm())}
 /* options + tour */
 const getO=()=>({st:{...ST},moods:[...MOODS],at:[...AT]});
 const DEF=JSON.stringify(getO());
@@ -270,13 +277,13 @@ function showLogin(msg){$("#app").classList.add("hide");$("#login").classList.re
 function adopt(d){P.length=0;P.push(...(d.P||[]));S.clin=d.clin||[];S.emo=d.emo||[];S.tasks=d.tasks||[];S.al=d.al||[];applyO(d.opts||JSON.parse(DEF));if(!P.find(p=>p.id==S.pid))S.pid=P[0]?P[0].id:0;S.sel=null;LS=snap()}
 let PEND=null;
 const flush=()=>{if(!PEND)return;clearTimeout(T);return PEND()};
-function save(){if(!S.ready||!sb)return;const j=snap(),u=JSON.stringify({me:S.me,sh:S.sh}),L=S.loc;if(j==LS&&u==US)return;clearTimeout(T);const a=j!=LS,b=u!=US;PEND=async()=>{PEND=null;LS=j;US=u;if(a)await sb.from("location_data").upsert({location_id:L,data:{...JSON.parse(j),by:CID},updated_at:new Date().toISOString()});if(b)await sb.from("user_data").upsert({user_id:S.uid,data:{me:S.me,sh:S.sh}})};T=setTimeout(PEND,700)}
-function sub(){if(CH)sb.removeChannel(CH);CH=sb.channel("loc"+S.loc).on("postgres_changes",{event:"*",schema:"public",table:"location_data",filter:"location_id=eq."+S.loc},p=>{const d=p.new&&p.new.data;if(!d||d.by==CID)return;const had=S.al.filter(a=>a.st=="active").map(a=>a.id);adopt(d);if(S.al.some(a=>a.st=="active"&&!had.includes(a.id)))beep();if(M)ban();else draw()}).subscribe()}
+function save(){if(!S.ready||!sb)return;const j=snap(),u=JSON.stringify({me:S.me,sh:S.sh}),L=S.loc;if(j==LS&&u==US)return;clearTimeout(T);const a=j!=LS,b=u!=US;PEND=async()=>{PEND=null;LS=j;US=u;const ts=new Date().toISOString();if(a)await sb.from("location_data").upsert({location_id:L,data:{...JSON.parse(j),by:CID},updated_at:ts});LU=new Date(ts).getTime();if(a)upd("Saved "+tm());if(b)await sb.from("user_data").upsert({user_id:S.uid,data:{me:S.me,sh:S.sh}})};T=setTimeout(PEND,700)}
+function sub(){if(CH)sb.removeChannel(CH);CH=sb.channel("loc"+S.loc).on("postgres_changes",{event:"*",schema:"public",table:"location_data",filter:"location_id=eq."+S.loc},p=>{const d=p.new&&p.new.data;if(!d||d.by==CID||PEND)return;LU=new Date(p.new.updated_at).getTime();remote(d);upd("Synced "+tm())}).subscribe()}
 async function enter(user){S.ready=0;S.uid=user.id;const email=user.email.toLowerCase(),q=await sb.from("members").select("role,location_id,locations(name)").eq("email",email);
 if(q.error||!q.data||!q.data.length){await sb.auth.signOut();showLogin("Access denied. "+email+" isn’t approved for any location. Ask your administrator to add you.");return}
 const r=q.data[0];S.loc=r.location_id;S.role=r.role;S.me={name:email.split("@")[0],user:email,role:"Nurse",unit:"",phone:"",exp:"",certs:[],notes:{}};
 const u=await sb.from("user_data").select("data").eq("user_id",user.id).maybeSingle();if(u.data&&u.data.data){Object.assign(S.me,u.data.data.me||{});if(u.data.data.sh)S.sh=u.data.data.sh}
-S.me.unit=r.locations.name;US=JSON.stringify({me:S.me,sh:S.sh});const l=await sb.from("location_data").select("data").eq("location_id",S.loc).maybeSingle();adopt(l.data&&l.data.data||{});
+S.me.unit=r.locations.name;US=JSON.stringify({me:S.me,sh:S.sh});const l=await sb.from("location_data").select("data,updated_at").eq("location_id",S.loc).maybeSingle();LU=l.data?new Date(l.data.updated_at).getTime():0;adopt(l.data&&l.data.data||{});
 S.email=email;S.home=S.loc;S.msgs=[];S.dir=[];S.peer=null;S.mine=false;S.locs=[{id:S.loc,name:r.locations.name}];
 if(S.role=="admin"){const q2=await sb.from("locations").select("*").order("name");if(q2.data&&q2.data.length)S.locs=q2.data}
 await loadDir();await loadMsgs();subMsg();pres();
@@ -305,7 +312,7 @@ savedn(){const v=$("#dt").value.trim();if(v)S.me.notes[S.nd]=v;else delete S.me.
 announce(){alertF()},sim:incoming,ea(b,i){alertF(byId(S.al,i))},da(b,i){S.al=S.al.filter(a=>a.id!=i);draw()},
 ack(b,i){byId(S.al,i).ack=tm()+" by "+au();ban();if(S.v=="alerts")draw()},res(b,i){const a=byId(S.al,i);a.st="resolved";a.rt=tm();draw()},
 mcancel(){closeM()},
-mine(){S.mine=!S.mine;draw()},gohome(){switchLoc(S.home)},
+mine(){S.mine=!S.mine;draw()},syncnow(){poll(true)},gohome(){switchLoc(S.home)},
 teamjoin(){const p=cur();p.team=p.team||[];const i=p.team.indexOf(S.email);if(i<0){p.team.push(S.email);logP(p,S.me.name+" joined the care team")}else{p.team.splice(i,1);logP(p,S.me.name+" left the care team")}draw()},
 teamrm(b){const p=cur(),e=b.dataset.e;p.team=(p.team||[]).filter(x=>x!=e);logP(p,dn(e)+" removed from the care team");draw()},
 teamadd(){const p=cur(),c=S.dir.filter(d=>d.location_id==S.loc&&!(p.team||[]).includes(d.email));if(!c.length){form("No one to add",[],null,null,{msg:"Everyone at this location is already on the care team, or no colleagues were found."});return}form("Add nurse to care team",[{k:"e",l:"Nurse",t:"sel",o:c.map(d=>[d.email,d.name]),v:c[0].email}],o=>{p.team=p.team||[];p.team.push(o.e);logP(p,dn(o.e)+" added to the care team")})},
@@ -318,7 +325,7 @@ document.addEventListener("change",e=>{const b=e.target;if(b.dataset.act=="task"
 document.addEventListener("keydown",e=>{if(e.key=="Escape"&&M)closeM();else if(e.key=="Escape"&&TI>=0)endTour();if(e.key=="Enter"&&e.target.id=="mt")H.send();if(e.key=="Enter"&&!$("#login").classList.contains("hide"))H.login()});
 if(SUPA_OK){sb.auth.onAuthStateChange(ev=>{if(ev=="PASSWORD_RECOVERY")form("Set a new password",[{k:"pw",l:"New password",t:"password",v:""}],async o=>{if(o.pw.length<8)return"Use at least 8 characters.";const r=await sb.auth.updateUser({password:o.pw});if(r.error)return r.error.message})});
 }
-setInterval(tick,1000);
+setInterval(tick,1000);setInterval(()=>poll(),5000);
 </script>
 </body>
 </html>
