@@ -79,6 +79,10 @@ main{padding:14px 14px 100px}.split{grid-template-columns:1fr}}
 @media(max-width:820px){.chat{grid-template-columns:1fr}.chat.open .pl{display:none}.chat:not(.open) .cv{display:none}.backm{display:inline}}
 .pwrap{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-bottom:8px}.pwrap .pc{flex:none;width:100%}.sec{margin:16px 0 8px;font-size:14px;color:var(--mu)}
 .av{width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--pubg);color:var(--pu);display:inline-grid;place-items:center;font-size:12px;font-weight:700;flex:none;margin-right:8px}img.avatar{object-fit:cover}
+.chks{max-height:200px;overflow:auto;border:1px solid var(--ln);border-radius:10px;padding:4px 10px}
+.quote{border-left:3px solid var(--pu);background:rgba(120,110,160,.18);padding:4px 8px;border-radius:6px;margin-bottom:4px;font-size:13px;cursor:pointer;overflow-wrap:anywhere}
+.flash{outline:2px solid var(--pu);outline-offset:2px}.bub.me .lnk{color:var(--on);text-decoration:underline}
+.repbar{display:flex;justify-content:space-between;gap:8px;align-items:center;background:var(--pubg);border-left:3px solid var(--pu);border-radius:8px;padding:6px 10px;margin-top:10px;font-size:13px}
 .tour-hl{position:relative;z-index:25;outline:3px solid var(--pu);outline-offset:3px;border-radius:12px;box-shadow:0 0 0 8px var(--pubg)}
 #tour{position:fixed;z-index:90;right:16px;bottom:16px;left:16px;display:flex;justify-content:flex-end;pointer-events:none}
 .tcard{pointer-events:auto;background:var(--card);border:1px solid var(--pu);border-radius:16px;padding:16px;max-width:360px;box-shadow:0 8px 30px rgba(60,40,120,.25)}
@@ -95,7 +99,7 @@ main{padding:14px 14px 100px}.split{grid-template-columns:1fr}}
 <div class="row"><button class="btn" style="width:100%" data-act="login">Sign in</button></div>
 <div class="row" style="margin-top:10px"><button class="lnk" data-act="signup">Create account</button><button class="lnk" data-act="reset">Forgot password</button></div>
 <p class="hint">Only emails your administrator has approved can open the dashboard.</p>
-<p class="hint" style="margin-top:6px">Version 7</p>
+<p class="hint" style="margin-top:6px">Version 8</p>
 </div></section>
 <div id="app" class="hide">
 <aside><div class="brand">Oncology Dashboard</div>
@@ -136,7 +140,7 @@ sh:{type:"Day (07:00–19:30)",s:"07:00",e:"19:30"},
 clin:[{id:id(),p:4,t:"06:50",a:"N. Okafor",x:"Temp 38.1 °C at 06:30. Blood cultures drawn, antibiotics given at 06:55. Reassess vitals hourly."},{id:id(),p:1,t:"06:40",a:"N. Okafor",x:"Neutropenic precautions in place. Mouth care done. Port site clean and dry."},{id:id(),p:0,t:"06:00",a:"N. Okafor",x:"Pharmacy delay on 4B oxaliplatin, now confirmed for 08:30."}],
 emo:[{id:id(),p:4,m:"Anxious",t:"06:45",a:"N. Okafor",x:"Tomás asked if the fever means he is getting worse. His partner arrives at 10:00. Wants the doctor to explain in plain words."},{id:id(),p:3,m:"Hopeful",t:"06:20",a:"N. Okafor",x:"Ruth is looking forward to her granddaughter’s visit on Saturday. Likes the blind half open."}],
 tasks:[{id:id(),p:4,x:"Hourly vitals and fever chart",d:"Every hour",c:0},{id:id(),p:3,x:"Give pre-meds before daratumumab",d:"09:45",c:0},{id:id(),p:1,x:"Doxorubicin double-check with second RN",d:"10:15",c:0},{id:id(),p:5,x:"Thyroid labs",d:"14:00",c:0},{id:id(),p:0,x:"Restock chemo spill kit",d:"Before 12:00",c:1}],
-al:[],msgs:[],dir:[],on:new Set(),locs:[],peer:null,mine:false,ps:""};
+al:[],msgs:[],dir:[],on:new Set(),locs:[],peer:null,mine:false,ps:"",groups:[],grp:null,rep:null};
 const nm=i=>{if(!i)return"Whole unit";const q=P.find(p=>p.id==i);return q?q.name:"Former patient"};
 const pO=()=>[[0,"Whole unit"]].concat(P.map(p=>[p.id,p.name]));
 const au=()=>{const w=S.me.name.split(" ");return w.length>1?w[0][0]+". "+w.slice(1).join(" "):w[0]};
@@ -152,7 +156,7 @@ function tick(){const s=shift();document.querySelectorAll("[data-cd]").forEach(e
 let M=null;
 function form(title,fs,save,del,o={}){M={title,fs,save,del,...o};drawM()}
 function drawM(){const el=$("#modal");if(!M){el.classList.add("hide");el.innerHTML="";return}el.classList.remove("hide");
-el.innerHTML=`<div class="dlg" role="dialog" aria-modal="true"><h2>${esc(M.title)}</h2>${M.msg?`<p>${esc(M.msg)}</p>`:""}${M.fs.map(f=>`<label for="f_${f.k}">${f.l}</label>`+(f.t=="area"?`<textarea id="f_${f.k}">${esc(f.v)}</textarea>`:f.t=="sel"?`<select id="f_${f.k}">${f.o.map(o=>{const[v,l]=Array.isArray(o)?o:[o,o];return`<option value="${esc(v)}"${String(v)==String(f.v)?" selected":""}>${esc(l)}</option>`}).join("")}</select>`:`<input id="f_${f.k}" type="${f.t||"text"}" value="${esc(f.v)}">`)).join("")}<div class="err" id="merr" role="alert"></div><div class="row">${M.save?'<button class="btn" data-act="msave">Save</button>':""}<button class="btn ghost" data-act="mcancel">Cancel</button>${M.del?`<button class="btn danger" data-act="mdel">${M.dl||"Delete"}</button>`:""}</div></div>`;
+el.innerHTML=`<div class="dlg" role="dialog" aria-modal="true"><h2>${esc(M.title)}</h2>${M.msg?`<p>${esc(M.msg)}</p>`:""}${M.fs.map(f=>`<label for="f_${f.k}">${f.l}</label>`+(f.t=="chk"?`<div class="chks">${f.o.map(o=>`<label style="display:flex;gap:8px;align-items:center;font-weight:400;margin:6px 0"><input type="checkbox" name="f_${f.k}" value="${esc(o[0])}" style="width:auto"> ${esc(o[1])}</label>`).join("")}</div>`:f.t=="area"?`<textarea id="f_${f.k}">${esc(f.v)}</textarea>`:f.t=="sel"?`<select id="f_${f.k}">${f.o.map(o=>{const[v,l]=Array.isArray(o)?o:[o,o];return`<option value="${esc(v)}"${String(v)==String(f.v)?" selected":""}>${esc(l)}</option>`}).join("")}</select>`:`<input id="f_${f.k}" type="${f.t||"text"}" value="${esc(f.v)}">`)).join("")}<div class="err" id="merr" role="alert"></div><div class="row">${M.save?'<button class="btn" data-act="msave">Save</button>':""}<button class="btn ghost" data-act="mcancel">Cancel</button>${M.del?`<button class="btn danger" data-act="mdel">${M.dl||"Delete"}</button>`:""}</div></div>`;
 const f=el.querySelector("input,textarea,select");if(f)f.focus()}
 function closeM(){M=null;drawM();draw()}
 /* forms */
@@ -227,18 +231,32 @@ const dn=e=>((S.dir||[]).find(d=>d.email==e)||{}).name||e;
 async function loadDir(){const r=await sb.rpc("directory");S.dir=r.data||[]}
 async function loadMsgs(){const r=await sb.from("messages").select("*").order("created_at",{ascending:false}).limit(500);S.msgs=(r.data||[]).reverse()}
 const peers=()=>{const m=new Map();S.dir.filter(d=>d.email!=S.email).forEach(d=>{const o=m.get(d.email);if(!o||(d.role=="admin"&&o.role!="admin"))m.set(d.email,d)});const A="Administrators",g=d=>d.role=="admin"?A:d.location_name;return[...m.values()].map(d=>({...d,g:g(d)})).sort((a,b)=>(a.g==A?-1:b.g==A?1:0)||a.g.localeCompare(b.g)||a.name.localeCompare(b.name))};
-const newer=m=>new Date(m.created_at)>new Date((S.me.mr||{})[m.sender_email]||0);
-const unread=e=>S.msgs.filter(m=>m.sender_email==e&&m.recipient_email==S.email&&newer(m)).length;
-function badge(){const n=S.msgs.filter(m=>m.recipient_email==S.email&&newer(m)).length,b=$("#msgBadge");if(b){b.textContent=n;b.classList.toggle("hide",!n)}}
+const newer=m=>new Date(m.created_at)>new Date((S.me.mr||{})[m.group_id?"g:"+m.group_id:m.sender_email]||0);
+const unread=e=>S.msgs.filter(m=>!m.group_id&&m.sender_email==e&&m.recipient_email==S.email&&newer(m)).length;
+function badge(){const n=S.msgs.filter(m=>m.sender_email!=S.email&&(m.group_id?(S.groups||[]).some(g=>g.id==m.group_id):m.recipient_email==S.email)&&newer(m)).length,b=$("#msgBadge");if(b){b.textContent=n;b.classList.toggle("hide",!n)}}
 function readP(e){S.me.mr=S.me.mr||{};S.me.mr[e]=new Date().toISOString()}
-function peersHTML(){let L="";return peers().map(d=>{const hd=d.g!=L?(L=d.g,`<div class="log"><b>${esc(L)}</b></div>`):"",u=unread(d.email);return hd+`<button class="pc ${S.peer==d.email?"on":""}" style="flex:none;width:100%;margin-bottom:6px;flex-direction:row;align-items:center" data-act="peer" data-e="${esc(d.email)}"><span class="dot ${S.on.has(d.email)?"on":""}"></span>${av(d.photo,d.name)}<b>${esc(d.name)}</b>${u?`<span class="badge">${u}</span>`:""}</button>`}).join("")||'<div class="empty">No colleagues found yet.</div>'}
-function threadHTML(){const p=S.peer;return S.msgs.filter(m=>(m.sender_email==p&&m.recipient_email==S.email)||(m.sender_email==S.email&&m.recipient_email==p)).map(m=>`<div class="bub ${m.sender_email==S.email?"me":""}">${esc(m.body)}<small>${new Date(m.created_at).toLocaleString([],{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</small></div>`).join("")||'<div class="empty">No messages yet. Say hello.</div>'}
+function peersHTML(){let L="";const gu=g=>S.msgs.filter(m=>m.group_id==g&&m.sender_email!=S.email&&newer(m)).length,st='style="flex:none;width:100%;margin-bottom:6px;flex-direction:row;align-items:center"';
+const G=`<div class="log"><b>Groups</b> <button class="lnk" data-act="newg">+ New group</button></div>`+((S.groups||[]).map(g=>{const u=gu(g.id);return`<button class="pc ${S.grp==g.id?"on":""}" ${st} data-act="grp" data-id="${g.id}"><span class="av">#</span><b>${esc(g.name)}</b>${u?`<span class="badge">${u}</span>`:""}</button>`}).join("")||'<div class="empty">No groups yet.</div>');
+return G+(peers().map(d=>{const hd=d.g!=L?(L=d.g,`<div class="log"><b>${esc(L)}</b></div>`):"",u=unread(d.email);return hd+`<button class="pc ${S.peer==d.email?"on":""}" ${st} data-act="peer" data-e="${esc(d.email)}"><span class="dot ${S.on.has(d.email)?"on":""}"></span>${av(d.photo,d.name)}<b>${esc(d.name)}</b>${u?`<span class="badge">${u}</span>`:""}</button>`}).join("")||'<div class="empty">No colleagues found yet.</div>')}
+const repHTML=()=>S.rep?`<div class="repbar"><span>Replying to <b>${esc(S.rep.sender_name)}</b>: ${esc(S.rep.body.slice(0,80))}</span><button class="lnk" data-act="repx">Cancel</button></div>`:"";
+const bub=m=>{const me=m.sender_email==S.email,o=m.reply_to&&S.msgs.find(x=>x.id==m.reply_to);return`<div class="bub ${me?"me":""}" id="m_${m.id}">${S.grp&&!me?`<small><b>${esc(m.sender_name)}</b></small>`:""}${m.reply_to?`<div class="quote" data-act="jump" data-id="${m.reply_to}"><b>${o?esc(o.sender_name):""}</b> ${o?esc(o.body.slice(0,80)):"Original message"}</div>`:""}${esc(m.body)}<small>${new Date(m.created_at).toLocaleString([],{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})} · <button class="lnk" data-act="reply" data-id="${m.id}">Reply</button></small></div>`};
+function threadHTML(){const inC=m=>S.grp?m.group_id==S.grp:(!m.group_id&&((m.sender_email==S.peer&&m.recipient_email==S.email)||(m.sender_email==S.email&&m.recipient_email==S.peer)));return S.msgs.filter(inC).map(bub).join("")||'<div class="empty">No messages yet. Say hello.</div>'}
 function drawThread(){const t=$("#thread");if(t){t.innerHTML=threadHTML();t.scrollTop=t.scrollHeight}}
 function drawPeers(){const p=$("#peers");if(p)p.innerHTML=peersHTML()}
-function messages(){return head("Messages","Chat with nurses at any location.")+`<div class="chat ${S.peer?"open":""}"><section class="panel pl"><h3 style="margin-bottom:8px">People</h3><div id="peers">${peersHTML()}</div></section><section class="panel cv">${S.peer?`<header><h3 style="display:flex;align-items:center">${av((S.dir.find(d=>d.email==S.peer)||{}).photo,dn(S.peer))}${esc(dn(S.peer))}</h3><button class="lnk backm" data-act="peerx">All people</button></header><div class="thread" id="thread">${threadHTML()}</div><div class="row"><input id="mt" placeholder="Write a message" style="flex:1" aria-label="Message"><button class="btn" data-act="send">Send</button></div><p class="hint">Please don’t put patient names or details in messages.</p>`:'<div class="empty">Choose someone to start a conversation.</div>'}</section></div>`}
+function messages(){const open=S.peer||S.grp,g=(S.groups||[]).find(x=>x.id==S.grp);
+const hdr=S.grp?`<header><h3 style="display:flex;align-items:center"><span class="av">#</span>${esc(g?g.name:"Group")}</h3><span><button class="lnk" data-act="ginfo">Group info</button> <button class="lnk backm" data-act="peerx">All chats</button></span></header>`:`<header><h3 style="display:flex;align-items:center">${av((S.dir.find(d=>d.email==S.peer)||{}).photo,dn(S.peer))}${esc(dn(S.peer))}</h3><button class="lnk backm" data-act="peerx">All chats</button></header>`;
+return head("Messages","Chat one-to-one or in groups, with any nurse at any location.")+`<div class="chat ${open?"open":""}"><section class="panel pl"><h3 style="margin-bottom:8px">Chats</h3><div id="peers">${peersHTML()}</div></section><section class="panel cv">${open?`${hdr}<div class="thread" id="thread">${threadHTML()}</div><div id="repbar">${repHTML()}</div><div class="row" style="margin-top:8px"><input id="mt" placeholder="Write a message" style="flex:1" aria-label="Message"><button class="btn" data-act="send">Send</button></div><p class="hint">Please don’t put patient names or details in messages.</p>`:'<div class="empty">Choose a person or group to start chatting.</div>'}</section></div>`}
 function ping(){try{const c=new(window.AudioContext||webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=660;g.gain.value=.05;o.start();o.stop(c.currentTime+.12)}catch(e){}}
 let MC=null,PC=null;
-function subMsg(){if(MC)sb.removeChannel(MC);MC=sb.channel("msg-"+S.email).on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:"recipient_email=eq."+S.email},p=>{const m=p.new;if(S.msgs.some(x=>x.id==m.id))return;S.msgs.push(m);if(S.v=="messages"&&S.peer==m.sender_email){readP(S.peer);drawThread()}else ping();drawPeers();badge()}).subscribe()}
+function gotMsg(m){if(S.msgs.some(x=>x.id==m.id))return;S.msgs.push(m);const mine=m.sender_email==S.email,inC=S.v=="messages"&&(m.group_id?S.grp==m.group_id:S.peer==m.sender_email);if(inC){if(!mine)readP(m.group_id?"g:"+m.group_id:m.sender_email);drawThread()}else if(!mine)ping();drawPeers();badge()}
+function subMsg(){if(MC)sb.removeChannel(MC);MC=sb.channel("msg-"+S.email).on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},p=>gotMsg(p.new)).subscribe()}
+let PT=0;
+async function pollMsgs(){if(!S.ready||!sb)return;const last=S.msgs.length?S.msgs[S.msgs.length-1].created_at:null;let q=sb.from("messages").select("*").order("created_at");if(last)q=q.gt("created_at",last);const r=await q.limit(200);(r.data||[]).forEach(gotMsg);if(++PT%3==0){await loadGroups();drawPeers();badge()}}
+async function loadGroups(){const a=await Promise.all([sb.from("groups").select("*").order("created_at"),sb.from("group_members").select("*")]);if(a[0].error){S.groups=[];return}const mm=a[1].data||[];S.groups=(a[0].data||[]).map(g=>({...g,members:mm.filter(x=>x.group_id==g.id).map(x=>x.email)}))}
+function newG(){const c=peers();if(!c.length){form("No one to add yet",[],null,null,{msg:"Groups need at least one other approved nurse."});return}
+form("New group chat",[{k:"name",l:"Group name",v:""},{k:"m",l:"Add people",t:"chk",o:c.map(d=>[d.email,d.name+" · "+d.g])}],async o=>{if(!o.name)return"Name the group.";if(!o.m.length)return"Pick at least one person.";const r=await sb.from("groups").insert({name:o.name,created_by:S.email}).select().single();if(r.error)return r.error.message;const q=await sb.from("group_members").insert([S.email,...o.m].map(e=>({group_id:r.data.id,email:e})));if(q.error)return q.error.message;await loadGroups();S.grp=r.data.id;S.peer=null;S.rep=null;readP("g:"+S.grp)})}
+function infoG(){const g=S.groups.find(x=>x.id==S.grp);if(!g)return;const c=peers().filter(d=>!g.members.includes(d.email)),fs=[{k:"name",l:"Group name",v:g.name}];if(c.length)fs.push({k:"m",l:"Add people",t:"chk",o:c.map(d=>[d.email,d.name+" · "+d.g])});
+form("Group info",fs,async o=>{if(!o.name)return"The name can’t be empty.";if(o.name!=g.name){const r=await sb.from("groups").update({name:o.name}).eq("id",g.id).select();if(r.error||!r.data.length)return"Only the person who made the group, or an admin, can rename it."}if(o.m&&o.m.length){const r=await sb.from("group_members").insert(o.m.map(e=>({group_id:g.id,email:e})));if(r.error)return"Only the person who made the group, or an admin, can add people."}await loadGroups()},async()=>{await sb.from("group_members").delete().eq("group_id",g.id).eq("email",S.email);S.grp=null;await loadGroups()},{dl:"Leave group",msg:"Members: "+g.members.map(dn).join(", ")})}
 function pres(){if(PC)sb.removeChannel(PC);PC=sb.channel("online",{config:{presence:{key:S.email}}});PC.on("presence",{event:"sync"},()=>{S.on=new Set(Object.keys(PC.presenceState()));if(S.v=="messages")drawPeers();else if(S.v=="admin")draw()}).subscribe(st=>{if(st=="SUBSCRIBED")PC.track({at:Date.now()})})}
 let LU=0,LT="";
 function upd(m){if(m)LT=m;const b=$("#sync");if(b)b.textContent=LT||"Sync"}
@@ -253,9 +271,19 @@ return`<h3 class="sec">My patients (${mine.length})</h3>`+(mine.map(p=>card(p,1)
 const okp=p=>typeof p=="string"&&p.startsWith("data:image/jpeg;base64,");
 const av=(p,n)=>okp(p)?`<img class="av" src="${esc(p)}" alt="">`:`<span class="av">${esc((n||"?").split(/[ @.]/).filter(Boolean).map(w=>w[0]).slice(0,2).join("").toUpperCase())}</span>`;
 function meChip(){const m=$("#me");if(m)m.innerHTML=av(S.me.photo,S.me.name)+`<span>${esc(S.me.name)}</span>`}
-function photo(file){if(!file||!file.type.startsWith("image/")){form("Couldn’t use that file",[],null,null,{msg:"Please choose a photo (JPG or PNG)."});return}const im=new Image(),u=URL.createObjectURL(file);
-im.onload=()=>{const s=160,c=document.createElement("canvas");c.width=c.height=s;const x=c.getContext("2d"),m=Math.min(im.width,im.height);x.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,s,s);S.me.photo=c.toDataURL("image/jpeg",.75);URL.revokeObjectURL(u);draw()};
-im.onerror=()=>{URL.revokeObjectURL(u);form("Couldn’t use that image",[],null,null,{msg:"Try a JPG or PNG photo."})};im.src=u}
+function photo(file){if(!file||!file.type.startsWith("image/")){form("Couldn’t use that file",[],null,null,{msg:"Please choose a photo (JPG or PNG)."});return}const im=new Image();
+im.onload=()=>cropOpen(im);im.onerror=()=>form("Couldn’t use that image",[],null,null,{msg:"Try a JPG or PNG photo."});im.src=URL.createObjectURL(file)}
+let CR=null;
+function cropDraw(c,s,ov){c=c||$("#cv");if(!c||!CR)return;s=s||280;const x=c.getContext("2d"),k=s/280,im=CR.im,b=280/Math.min(im.width,im.height)*CR.z*k;x.fillStyle="#dcd6ee";x.fillRect(0,0,s,s);x.save();x.translate(s/2+CR.x*k,s/2+CR.y*k);x.rotate(CR.r*Math.PI/2);x.scale(b,b);x.drawImage(im,-im.width/2,-im.height/2);x.restore();
+if(ov){x.save();x.fillStyle="rgba(30,25,50,.55)";x.beginPath();x.rect(0,0,s,s);x.arc(s/2,s/2,s/2-1,0,Math.PI*2,true);x.fill("evenodd");x.strokeStyle="#fff";x.lineWidth=2;x.beginPath();x.arc(s/2,s/2,s/2-1,0,Math.PI*2);x.stroke();x.restore()}}
+function cropOpen(im){CR={im,z:1,x:0,y:0,r:0};M={custom:1,fs:[]};const el=$("#modal");el.classList.remove("hide");
+el.innerHTML=`<div class="dlg" role="dialog" aria-modal="true"><h2>Adjust your photo</h2><p class="hint">Drag to move it. Pinch, scroll or use the slider to zoom. The circle is what others will see.</p><canvas id="cv" width="280" height="280" style="width:280px;max-width:100%;aspect-ratio:1;touch-action:none;cursor:grab;display:block;margin:0 auto;border-radius:12px"></canvas><label for="zm">Zoom</label><input id="zm" type="range" min="1" max="5" step="0.01" value="1"><div class="row"><button class="btn" data-act="cropsave">Use photo</button><button class="btn ghost" data-act="croprot">Rotate</button><button class="btn ghost" data-act="cropreset">Reset</button><button class="btn ghost" data-act="mcancel">Cancel</button></div></div>`;
+const cv=$("#cv"),Pt=new Map();let pd=0;
+cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);Pt.set(e.pointerId,[e.clientX,e.clientY]);pd=0};
+cv.onpointermove=e=>{if(!Pt.has(e.pointerId))return;const k=280/cv.getBoundingClientRect().width,o=Pt.get(e.pointerId);Pt.set(e.pointerId,[e.clientX,e.clientY]);if(Pt.size==1){CR.x+=(e.clientX-o[0])*k;CR.y+=(e.clientY-o[1])*k}else if(Pt.size==2){const v=[...Pt.values()],d=Math.hypot(v[0][0]-v[1][0],v[0][1]-v[1][1]);if(pd)CR.z=Math.min(5,Math.max(1,CR.z*d/pd));pd=d;$("#zm").value=CR.z}cropDraw(null,280,1)};
+cv.onpointerup=cv.onpointercancel=e=>{Pt.delete(e.pointerId);pd=0};
+cv.addEventListener("wheel",e=>{e.preventDefault();CR.z=Math.min(5,Math.max(1,CR.z*(e.deltaY<0?1.08:.93)));$("#zm").value=CR.z;cropDraw(null,280,1)},{passive:false});
+$("#zm").oninput=e=>{CR.z=+e.target.value;cropDraw(null,280,1)};cropDraw(null,280,1)}
 /* options + tour */
 const getO=()=>({st:{...ST},moods:[...MOODS],at:[...AT]});
 const DEF=JSON.stringify(getO());
@@ -298,7 +326,7 @@ const u=await sb.from("user_data").select("data").eq("user_id",user.id).maybeSin
 S.me.unit=r.locations.name;US=JSON.stringify({me:S.me,sh:S.sh});const l=await sb.from("location_data").select("data,updated_at").eq("location_id",S.loc).maybeSingle();LU=l.data?new Date(l.data.updated_at).getTime():0;adopt(l.data&&l.data.data||{});
 S.email=email;S.home=S.loc;S.msgs=[];S.dir=[];S.peer=null;S.mine=false;S.locs=[{id:S.loc,name:r.locations.name}];
 if(S.role=="admin"){const q2=await sb.from("locations").select("*").order("name");if(q2.data&&q2.data.length)S.locs=q2.data}
-await loadDir();await loadMsgs();subMsg();pres();
+await loadDir();await loadMsgs();await loadGroups();subMsg();pres();
 S.ready=1;S.v="home";sub();$("#login").classList.add("hide");$("#app").classList.remove("hide");$("#adminNav").classList.toggle("hide",S.role!="admin");draw();if(!S.me.tour)setTimeout(()=>tour(0),700)}
 async function loadAdm(){const a=await Promise.all([sb.from("locations").select("*").order("name"),sb.from("members").select("*").order("email")]);S.adm={l:a[0].data||[],m:a[1].data||[]};if(S.adm.l.length)S.locs=S.adm.l;await loadDir();draw()}
 const locName=i=>((S.adm.l.find(x=>x.id==i))||{}).name||"Unknown";
@@ -313,7 +341,7 @@ async login(){if(!SUPA_OK){$("#err").textContent="Add your Supabase URL and key 
 async signup(){if(!SUPA_OK)return;const e=$("#em").value.trim().toLowerCase(),p=$("#pw").value;if(!e||p.length<8){$("#err").textContent="Enter your email and a password of at least 8 characters.";return}const r=await sb.auth.signUp({email:e,password:p,options:{emailRedirectTo:location.href.split("#")[0]}});$("#err").textContent=r.error?r.error.message:"Check your email to confirm your account, then sign in."},
 async reset(){if(!SUPA_OK)return;const e=$("#em").value.trim().toLowerCase();if(!e){$("#err").textContent="Enter your email first.";return}await sb.auth.resetPasswordForEmail(e,{redirectTo:location.href.split("#")[0]});$("#err").textContent="If that email has an account, a reset link is on its way."},
 addl(){locF()},el(b){locF(S.adm.l.find(x=>x.id==b.dataset.id))},addmem(){memF()},emem(b){memF(S.adm.m.find(x=>x.id==b.dataset.id))},
-async logout(){S.ready=0;TI=-1;$("#tour").classList.add("hide");tourHL();await flush();[CH,MC,PC].forEach(c=>c&&sb.removeChannel(c));S.msgs=[];S.dir=[];S.peer=null;await sb.auth.signOut();showLogin("")},
+async logout(){S.ready=0;TI=-1;$("#tour").classList.add("hide");tourHL();await flush();[CH,MC,PC].forEach(c=>c&&sb.removeChannel(c));S.msgs=[];S.dir=[];S.peer=null;S.grp=null;S.groups=[];S.rep=null;await sb.auth.signOut();showLogin("")},
 nav(b){S.v=b.dataset.v;if(S.v=="admin")loadAdm();else draw()},sel(b,i){S.sel=S.sel==i?null:i;draw()},pick(b,i){S.pid=i;draw();if(matchMedia("(max-width:820px)").matches){const d=$("#pdetail");if(d)d.scrollIntoView({behavior:"smooth"})}},
 joinp(b,i){const p=P.find(x=>x.id==i);if(!p)return;p.team=p.team||[];if(!p.team.includes(S.email)){p.team.push(S.email);logP(p,S.me.name+" joined the care team")}draw()},
 leavep(b,i){const p=P.find(x=>x.id==i);if(!p)return;p.team=(p.team||[]).filter(x=>x!=S.email);logP(p,S.me.name+" left the care team");draw()},
@@ -326,13 +354,19 @@ savedn(){const v=$("#dt").value.trim();if(v)S.me.notes[S.nd]=v;else delete S.me.
 announce(){alertF()},sim:incoming,ea(b,i){alertF(byId(S.al,i))},da(b,i){S.al=S.al.filter(a=>a.id!=i);draw()},
 ack(b,i){byId(S.al,i).ack=tm()+" by "+au();ban();if(S.v=="alerts")draw()},res(b,i){const a=byId(S.al,i);a.st="resolved";a.rt=tm();draw()},
 mcancel(){closeM()},
-mine(){S.mine=!S.mine;draw()},syncnow(){poll(true)},photoPick(){$("#photoIn").click()},photoDel(){delete S.me.photo;draw()},gohome(){switchLoc(S.home)},
+mine(){S.mine=!S.mine;draw()},syncnow(){poll(true)},
+cropsave(){const o=document.createElement("canvas");o.width=o.height=160;cropDraw(o,160,0);S.me.photo=o.toDataURL("image/jpeg",.8);CR=null;closeM()},
+croprot(){CR.r=(CR.r+1)%4;cropDraw(null,280,1)},cropreset(){CR.z=1;CR.x=CR.y=0;CR.r=0;$("#zm").value=1;cropDraw(null,280,1)},
+reply(b){S.rep=S.msgs.find(x=>x.id==b.dataset.id)||null;const rb=$("#repbar");if(rb)rb.innerHTML=repHTML();const i=$("#mt");if(i)i.focus()},
+repx(){S.rep=null;const rb=$("#repbar");if(rb)rb.innerHTML=""},
+jump(b){const e=$("#m_"+b.dataset.id);if(e){e.scrollIntoView({behavior:"smooth",block:"center"});e.classList.add("flash");setTimeout(()=>e.classList.remove("flash"),1500)}},
+newg(){newG()},ginfo(){infoG()},photoPick(){$("#photoIn").click()},photoDel(){delete S.me.photo;draw()},gohome(){switchLoc(S.home)},
 teamjoin(){const p=cur();p.team=p.team||[];const i=p.team.indexOf(S.email);if(i<0){p.team.push(S.email);logP(p,S.me.name+" joined the care team")}else{p.team.splice(i,1);logP(p,S.me.name+" left the care team")}draw()},
 teamrm(b){const p=cur(),e=b.dataset.e;p.team=(p.team||[]).filter(x=>x!=e);logP(p,dn(e)+" removed from the care team");draw()},
 teamadd(){const p=cur(),c=S.dir.filter(d=>d.location_id==S.loc&&!(p.team||[]).includes(d.email));if(!c.length){form("No one to add",[],null,null,{msg:"Everyone at this location is already on the care team, or no colleagues were found."});return}form("Add nurse to care team",[{k:"e",l:"Nurse",t:"sel",o:c.map(d=>[d.email,d.name]),v:c[0].email}],o=>{p.team=p.team||[];p.team.push(o.e);logP(p,dn(o.e)+" added to the care team")})},
-peer(b){S.peer=b.dataset.e;readP(S.peer);draw();const t=$("#thread");if(t)t.scrollTop=t.scrollHeight},peerx(){S.peer=null;draw()},
-async send(){const i=$("#mt"),t=i?i.value.trim():"";if(!t||!S.peer)return;i.value="";const r=await sb.from("messages").insert({sender_email:S.email,sender_name:S.me.name,recipient_email:S.peer,body:t}).select().single();if(r.error){form("Message not sent",[],null,null,{msg:r.error.message});return}S.msgs.push(r.data);drawThread()},tstart(){tour(0)},tnext(){tour(TI+1)},tback(){tour(TI-1)},tskip(){endTour()},el2(b){listF(b.dataset.id)},
-msave(){const o={};M.fs.forEach(f=>o[f.k]=$("#f_"+f.k).value.trim());const r=M.save(o);if(r&&r.then){r.then(e=>{if(e)$("#merr").textContent=e;else closeM()});return}if(r){$("#merr").textContent=r;return}closeM()},
+peer(b){S.peer=b.dataset.e;S.grp=null;S.rep=null;readP(S.peer);draw();const t=$("#thread");if(t)t.scrollTop=t.scrollHeight},grp(b){S.grp=b.dataset.id;S.peer=null;S.rep=null;readP("g:"+S.grp);draw();const t=$("#thread");if(t)t.scrollTop=t.scrollHeight},peerx(){S.peer=null;S.grp=null;S.rep=null;draw()},
+async send(){const i=$("#mt"),t=i?i.value.trim():"";if(!t||(!S.peer&&!S.grp))return;i.value="";const row={sender_email:S.email,sender_name:S.me.name,body:t};if(S.grp)row.group_id=S.grp;else row.recipient_email=S.peer;if(S.rep)row.reply_to=S.rep.id;const r=await sb.from("messages").insert(row).select().single();if(r.error){form("Message not sent",[],null,null,{msg:r.error.message});return}S.rep=null;if(!S.msgs.some(x=>x.id==r.data.id))S.msgs.push(r.data);drawThread();const rb=$("#repbar");if(rb)rb.innerHTML=""},
+msave(){const o={};M.fs.forEach(f=>o[f.k]=f.t=="chk"?[...document.querySelectorAll('input[name="f_'+f.k+'"]:checked')].map(x=>x.value):$("#f_"+f.k).value.trim());const r=M.save(o);if(r&&r.then){r.then(e=>{if(e)$("#merr").textContent=e;else closeM()});return}if(r){$("#merr").textContent=r;return}closeM()},
 mdel(b){if(!M.cf){M.cf=1;b.textContent="Tap again to confirm";return}M.del();closeM()}};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const f=H[b.dataset.act];if(f&&b.type!="checkbox")f(b,+b.dataset.id)});
 document.addEventListener("change",e=>{const b=e.target;if(b.dataset.act=="task")H.task(b,+b.dataset.id);if(b.dataset.chg=="nd"&&b.value){S.nd=b.value;draw()}if(b.dataset.chg=="loc")switchLoc(b.value);if(b.id=="photoIn"&&b.files&&b.files[0]){photo(b.files[0]);b.value=""}});
@@ -340,7 +374,7 @@ document.addEventListener("keydown",e=>{if(e.key=="Escape"&&M)closeM();else if(e
 if(SUPA_OK){sb.auth.onAuthStateChange(ev=>{if(ev=="PASSWORD_RECOVERY")form("Set a new password",[{k:"pw",l:"New password",t:"password",v:""}],async o=>{if(o.pw.length<8)return"Use at least 8 characters.";const r=await sb.auth.updateUser({password:o.pw});if(r.error)return r.error.message})});
 }
 document.addEventListener("input",e=>{if(e.target.id=="psearch"){S.ps=e.target.value;const l=$("#plist");if(l)l.innerHTML=plistHTML()}});
-setInterval(tick,1000);setInterval(()=>poll(),5000);
+setInterval(tick,1000);setInterval(()=>poll(),5000);setInterval(pollMsgs,5000);
 </script>
 </body>
 </html>
